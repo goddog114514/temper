@@ -1,0 +1,11 @@
+target/
+.build/
+dist/
+data/*.db
+data/*.db-wal
+data/*.db-shm
+node_modules/
+*.exe
+*.pdb
+.DS_Store
+.workbuddy/

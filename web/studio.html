@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>和弦工坊 — 调律 TEMPER</title>
+<meta name="description" content="选择和弦、比较把位、编排进行。指法由 C++ 引擎搜索，进行可以保存与分享。">
+<meta name="theme-color" content="#F3F0E7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M11 8v9a5 5 0 0 0 10 0V8' fill='none' stroke='%23F3F0E7' stroke-width='2'/%3E%3Cpath d='M16 22v3' stroke='%23F3F0E7' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="top">
+  <div class="wrap top__in">
+    <a class="brand" href="/" aria-label="调律 TEMPER 首页">
+      <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M6.2 2.6v7.2a4.8 4.8 0 0 0 9.6 0V2.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M11 14.6V19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="11" cy="20" r="1.1" fill="currentColor"/></svg>
+      <span>调律</span><small>TEMPER</small>
+    </a>
+    <nav aria-label="主导航">
+      <a href="/">手册</a>
+      <a href="/studio">工坊</a>
+      <a href="/practice">练习</a>
+      <a href="/profile">档案</a>
+    </nav>
+    <div class="top__meta"><span class="dot" data-health data-state="loading"></span><span data-device>—</span></div>
+  </div>
+</header>
+
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="pagehead">
+      <div>
+        <div class="eyebrow"><span>Chord studio</span><span class="rule"></span><span>11 qualities · 12 roots</span></div>
+        <h1>把和弦，<br><em>摊开</em>看。</h1>
+      </div>
+      <p>左边是音与谱，右边是手的位置。指法搜索跑在 C++ 里：给一组音，返回一组能按的形状，再按跨度、把位与低音排序。</p>
+    </div>
+
+    <div class="grid grid--studio">
+      <section class="panel" aria-labelledby="chord-h">
+        <div class="panel__head">
+          <h2 id="chord-h">和弦</h2>
+          <span class="kicker" id="chordMeta">—</span>
+        </div>
+
+        <div class="grid grid--2" style="gap:12px">
+          <div class="field">
+            <label for="rootSel">根音</label>
+            <select id="rootSel" aria-label="根音"></select>
+          </div>
+          <div class="field">
+            <label for="qualitySel">性质</label>
+            <select id="qualitySel" aria-label="和弦性质"></select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:14px;justify-content:space-between">
+          <span class="kicker">转位</span>
+          <div class="seg" id="invSeg" role="group" aria-label="转位"></div>
+        </div>
+
+        <div class="readout">
+          <div class="readout__symbol" id="chordSymbol">—</div>
+          <div class="readout__meta" id="chordBass">—</div>
+        </div>
+
+        <div class="stage" id="chordStaff" style="margin-top:14px"></div>
+        <div id="chordKeys" style="margin-top:14px"></div>
+
+        <div class="row" style="margin-top:16px">
+          <button class="btn" type="button" id="playChord">柱式试听</button>
+          <button class="btn btn--ghost" type="button" id="playArp">琶音</button>
+          <span class="spacer"></span>
+          <span class="kicker" id="chordEngine">C++ · —</span>
+        </div>
+
+        <ol class="tones" id="chordTones"></ol>
+      </section>
+
+      <section class="panel" aria-labelledby="grip-h">
+        <div class="panel__head">
+          <h2 id="grip-h">指法</h2>
+          <span class="kicker" id="voicingCount">—</span>
+        </div>
+        <div class="stage" id="voicingStage" style="min-height:190px"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn btn--ghost btn--sm" type="button" id="playVoicing" disabled>试听这个把位</button>
+          <span class="kicker" id="voicingMeta">选择一张图</span>
+        </div>
+        <div class="voicings" id="voicingGrid"></div>
+        <p class="small muted" style="margin-top:14px">搜索范围：标准调弦、3–15 品、跨品不超过 4、至少 4 根弦。跨度越小、把位越低、低音为根音的形状排前。</p>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top:var(--gap)" aria-labelledby="prog-h">
+      <div class="panel__head">
+        <h2 id="prog-h">进行</h2>
+        <span class="kicker" id="progHint">4 小节 · 每小节 4 拍</span>
+      </div>
+
+      <div class="chips" id="progPresets" role="group" aria-label="经典进行"></div>
+
+      <div class="row" style="margin-top:16px;align-items:flex-end;gap:14px">
+        <div class="field" style="min-width:140px">
+          <label for="progKey">调</label>
+          <select id="progKey" aria-label="调"></select>
+        </div>
+        <div class="field" style="flex:1;min-width:180px">
+          <label for="progTempo">速度 <span class="mono" id="progTempoOut">96 BPM</span></label>
+          <input type="range" id="progTempo" min="52" max="180" step="2" value="96" aria-label="速度">
+        </div>
+        <div class="seg" id="progVoicing" role="group" aria-label="和弦厚度">
+          <button type="button" data-seventh="false" aria-pressed="true">三和弦</button>
+          <button type="button" data-seventh="true" aria-pressed="false">七和弦</button>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn" type="button" id="progPlay">播放</button>
+        <button class="btn btn--ghost" type="button" id="progStop" disabled>停止</button>
+      </div>
+
+      <div class="stage" id="progSlots" style="margin-top:18px;padding:14px;min-height:120px"></div>
+
+      <hr class="hr">
+      <div class="grid grid--2" style="gap:var(--gap)">
+        <div>
+          <span class="kicker">保存与分享</span>
+          <div class="row" style="margin-top:10px">
+            <input type="text" id="presetName" placeholder="给这个进行起个名字" maxlength="48" aria-label="预设名称" style="flex:1;min-width:160px">
+            <button class="btn btn--ghost" type="button" id="savePreset">保存</button>
+            <button class="btn" type="button" id="shareBtn">生成链接</button>
+          </div>
+          <div class="copybox" id="shareOut" style="margin-top:12px" hidden>
+            <code id="shareUrl">—</code>
+            <button class="btn btn--sm btn--ghost" type="button" id="copyShare">复制</button>
+            <a class="btn btn--sm" id="openShare" href="#" target="_blank" rel="noopener">打开</a>
+          </div>
+          <div class="rows" id="customPresets" style="margin-top:12px"></div>
+        </div>
+        <div>
+          <span class="kicker">这一组进行的级数</span>
+          <div class="tablewrap" style="margin-top:10px">
+            <table>
+              <thead><tr><th>小节</th><th>级数</th><th>和弦</th><th>音</th></tr></thead>
+              <tbody id="progTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <span>TEMPER · 调律 — 和弦工坊</span>
+    <span>指法引擎 C++20 · API Rust · SQLite WAL</span>
+    <a href="/" class="linkish">回到手册</a>
+  </div>
+</footer>
+
+<script type="module" src="/js/studio.js"></script>
+</body>
+</html>

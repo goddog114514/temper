@@ -1,0 +1,29 @@
+[package]
+name = "temper-server"
+description = "TEMPER handbook backend: theory API, practice engine, persistence"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+temper-core = { path = "../temper-core" }
+axum = { version = "0.8", features = ["json", "query"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "net"] }
+tower-http = { version = "0.6", features = ["fs", "trace", "catch-panic", "cors", "limit"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rusqlite = { version = "0.34", features = ["bundled"] }
+uuid = { version = "1", features = ["v4"] }
+rand = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+tempfile = "3"
+
+[[bin]]
+name = "temper-server"
+path = "src/main.rs"

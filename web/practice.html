@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>练习 — 调律 TEMPER</title>
+<meta name="description" content="练耳、节奏与读谱。服务端出题与判分，错误会给出可重听的解释。">
+<meta name="theme-color" content="#F3F0E7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2317150F'/%3E%3Cpath d='M11 8v9a5 5 0 0 0 10 0V8' fill='none' stroke='%23F3F0E7' stroke-width='2'/%3E%3Cpath d='M16 22v3' stroke='%23F3F0E7' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="top">
+  <div class="wrap top__in">
+    <a class="brand" href="/" aria-label="调律 TEMPER 首页">
+      <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M6.2 2.6v7.2a4.8 4.8 0 0 0 9.6 0V2.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M11 14.6V19" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="11" cy="20" r="1.1" fill="currentColor"/></svg>
+      <span>调律</span><small>TEMPER</small>
+    </a>
+    <nav aria-label="主导航">
+      <a href="/">手册</a>
+      <a href="/studio">工坊</a>
+      <a href="/practice">练习</a>
+      <a href="/profile">档案</a>
+    </nav>
+    <div class="top__meta"><span class="dot" data-health data-state="loading"></span><span data-device>—</span></div>
+  </div>
+</header>
+
+<main id="main" class="page">
+  <div class="wrap">
+    <div class="pagehead">
+      <div>
+        <div class="eyebrow"><span>Practice loop</span><span class="rule"></span><span>Listen · answer · repeat</span></div>
+        <h1>听见，<br>才算<em>学会</em>。</h1>
+      </div>
+      <p>每组 4–20 题，服务端出题、判分并记录薄弱项。答错不会直接跳到下一题：先看解释，再听一遍正确答案。</p>
+    </div>
+
+    <div class="grid grid--practice">
+      <div class="stack">
+        <section class="panel" id="setup" aria-labelledby="setup-h">
+          <div class="panel__head">
+            <h2 id="setup-h">选一种练法</h2>
+            <span class="kicker">服务端出题</span>
+          </div>
+          <div class="mode-cards" id="modeCards" role="group" aria-label="练习类型"></div>
+          <div class="row" style="margin-top:20px;align-items:flex-end">
+            <div class="field">
+              <span class="field__label">难度</span>
+              <div class="seg" id="difficultySeg" role="group" aria-label="难度">
+                <button type="button" data-diff="1" aria-pressed="false">入门</button>
+                <button type="button" data-diff="2" aria-pressed="true">标准</button>
+                <button type="button" data-diff="3" aria-pressed="false">进阶</button>
+              </div>
+            </div>
+            <div class="field" style="min-width:110px">
+              <label for="lengthSel">题量</label>
+              <select id="lengthSel">
+                <option value="6">6 题</option>
+                <option value="8" selected>8 题</option>
+                <option value="10">10 题</option>
+                <option value="12">12 题</option>
+              </select>
+            </div>
+            <div class="spacer"></div>
+            <button class="btn" type="button" id="startBtn">开始练习</button>
+          </div>
+          <p class="small muted" id="modeHint" style="margin-top:14px"></p>
+        </section>
+
+        <section class="panel runner" id="runner" hidden aria-labelledby="runner-h">
+          <div class="panel__head">
+            <h2 id="runner-h">第 <span id="qIndex">1</span> / <span id="qTotal">8</span> 题</h2>
+            <div class="row" style="gap:14px">
+              <span class="kicker" id="qKind">—</span>
+              <button class="btn btn--ghost btn--sm" type="button" id="finishEarly">提前结束</button>
+            </div>
+          </div>
+          <div class="bar" style="margin-bottom:18px"><i id="qBar" style="width:0%"></i></div>
+
+          <div class="prompt">
+            <span class="prompt__label" id="promptLabel">—</span>
+            <div class="prompt__big" id="promptBig">—</div>
+            <button class="play-orb" type="button" id="playPrompt" aria-label="播放题目声音">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+            </button>
+            <div class="stage" id="promptStage" style="max-width:620px;width:100%" hidden></div>
+          </div>
+
+          <div class="row" style="justify-content:center;margin-top:6px">
+            <button class="btn btn--ghost btn--sm" type="button" id="replay" hidden>再听一次</button>
+            <span class="kicker" id="qHint"></span>
+          </div>
+
+          <div class="choices" id="choices"></div>
+
+          <div id="rhythmArea" hidden>
+            <div class="tap-pad" id="tapPad" role="button" tabindex="0" aria-label="节拍垫：按空格或点击">
+              点击这里开始 · 跟随节拍敲击
+            </div>
+            <div class="beat-grid" id="beatGrid"></div>
+            <div class="row" style="justify-content:center;margin-top:12px">
+              <button class="btn" type="button" id="rhythmStart">开始拍击</button>
+              <span class="kicker" id="rhythmStatus"></span>
+            </div>
+          </div>
+
+          <div class="feedback" id="feedback" hidden></div>
+          <div class="row" style="margin-top:16px;justify-content:flex-end">
+            <button class="btn" type="button" id="nextBtn" disabled>下一题</button>
+          </div>
+        </section>
+
+        <section class="panel" id="summary" hidden aria-labelledby="sum-h">
+          <div class="panel__head">
+            <h2 id="sum-h">这一组的结果</h2>
+            <span class="kicker" id="sumMode">—</span>
+          </div>
+          <div class="result">
+            <div class="ring" id="sumRing" style="--v:0"><b id="sumAccuracy">0<small>%</small></b></div>
+            <div>
+              <div class="grid grid--3" style="gap:10px">
+                <div class="stat"><span class="stat__k">答对</span><div class="stat__v" id="sumCorrect">0</div></div>
+                <div class="stat"><span class="stat__k">得分</span><div class="stat__v" id="sumScore">0</div></div>
+                <div class="stat"><span class="stat__k">用时</span><div class="stat__v" id="sumTime">0:00</div></div>
+              </div>
+              <div class="rows" id="sumTags" style="margin-top:12px"></div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:20px">
+            <button class="btn" type="button" id="againBtn">再来一组</button>
+            <a class="btn btn--ghost" href="/profile">查看档案</a>
+            <a class="btn btn--ghost" href="/">回到手册</a>
+          </div>
+        </section>
+      </div>
+
+      <aside class="stack">
+        <section class="panel" aria-labelledby="live-h">
+          <div class="panel__head"><h2 id="live-h" style="font-size:22px">本组</h2><span class="kicker" id="liveMode">—</span></div>
+          <div class="grid grid--2" style="gap:10px">
+            <div class="stat"><span class="stat__k">答对</span><div class="stat__v" id="liveCorrect">0</div></div>
+            <div class="stat"><span class="stat__k">连对</span><div class="stat__v" id="liveStreak">0</div></div>
+          </div>
+          <div class="bar" style="margin-top:14px"><i id="liveBar" style="width:0%"></i></div>
+          <p class="small muted" style="margin-top:12px" id="liveNote">开始后会显示进度。</p>
+        </section>
+
+        <section class="panel panel--flat" aria-labelledby="how-h">
+          <div class="panel__head"><h2 id="how-h" style="font-size:22px">怎么判分</h2></div>
+          <div class="rows">
+            <div class="rowitem"><div class="rowitem__main"><b>选择型</b><span>音程 / 和弦 / 音阶 / 读谱</span></div><div class="rowitem__side">答对 10 分<br>速度加分 5</div></div>
+            <div class="rowitem"><div class="rowitem__main"><b>节奏型</b><span>按八分音符网格对齐</span></div><div class="rowitem__side">命中 80%<br>且拍数接近</div></div>
+            <div class="rowitem"><div class="rowitem__main"><b>容差</b><span>入门 ±140 ms · 标准 ±100 ms · 进阶 ±70 ms</span></div><div class="rowitem__side">按难度</div></div>
+          </div>
+          <p class="small muted" style="margin-top:12px">键盘 1–5 可直接选答案；节奏题用空格拍击。</p>
+        </section>
+
+        <section class="panel panel--dark" aria-labelledby="tip-h">
+          <div class="panel__head"><h2 id="tip-h" style="font-size:22px">听之前</h2></div>
+          <p class="small" style="line-height:1.7">先听低音，再听最高音。音程是两点的距离，和弦是三个以上的点如何堆起来。答错时把“再听一次”当成下一次的起点。</p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__in">
+    <span>TEMPER · 调律 — 练习</span>
+    <span>判分与出题在 Rust；答案不随题目下发</span>
+    <a href="/" class="linkish">回到手册</a>
+  </div>
+</footer>
+
+<script type="module" src="/js/practice.js"></script>
+</body>
+</html>
